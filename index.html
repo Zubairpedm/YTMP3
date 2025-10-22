@@ -243,12 +243,15 @@
 
                 setProgressBar(100, 'Done!');
 
-                // Simulate success and getting a download URL
-                const mockDownloadUrl = `data/converted-file-${Date.now()}.${format}`; // This would be a real server-generated URL
+                // Simulate success and getting a functional download link (data URL)
+                // This generates a tiny text file containing the mock details to prove the download mechanism works.
+                const mockContent = `Mock Conversion Success:\nURL: ${videoUrl}\nFormat: ${format.toUpperCase()} (${quality})\nTimestamp: ${new Date().toISOString()}`;
+                const mockDownloadUrl = 'data:text/plain;charset=utf-8,' + encodeURIComponent(mockContent);
+
                 const mockFileName = `converted_media_${quality}.${format}`;
 
                 showDownloadLink(mockDownloadUrl, mockFileName);
-                setReady('Conversion successful! Your file is ready.', false);
+                setReady('Conversion successful! Your mock file is ready.', false);
 
             } catch (error) {
                 console.error("Conversion simulation failed:", error);
