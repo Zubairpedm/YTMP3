@@ -42,7 +42,7 @@
     <div id="app" class="container-card w-full max-w-2xl p-6 md:p-10 rounded-xl border border-gray-700">
 
         <!-- Header -->
-        <h1 class="text-3xl font-bold text-center text-green-400 mb-2">Media Converter Hub</h1>
+        <h1 class="3xl font-bold text-center text-green-400 mb-2">Media Converter Hub</h1>
         <p class="text-center text-gray-400 mb-8">Paste your video link to convert and download media files.</p>
 
         <!-- Input and Control Area -->
@@ -112,7 +112,7 @@
     </div>
 
     <script>
-        // --- Configuration for Quality Options ---
+        // --- Configuration ---
         const QUALITY_OPTIONS = {
             mp3: [
                 { value: '320', label: 'High Quality (320 kbps)' },
@@ -126,6 +126,9 @@
                 { value: '360', label: 'Mobile (360p)' },
             ]
         };
+
+        // A URL to a small, publicly available MP4 file for mock playback demonstration.
+        const MOCK_VIDEO_URL = "https://www.w3schools.com/html/mov_bbb.mp4"; 
 
         // --- DOM Element References ---
         const urlInput = document.getElementById('video-url');
@@ -205,9 +208,6 @@
 
         /**
          * Main function to start the conversion process (conceptual).
-         * NOTE: The actual video processing requires a back-end server
-         * that can use tools like yt-dlp and FFmpeg, which cannot be
-         * run in this client-side environment. This function only simulates the process.
          */
         async function startConversion() {
             const videoUrl = urlInput.value.trim();
@@ -225,33 +225,36 @@
             setLoading('Connecting to server...');
 
             // --- CONCEPTUAL API CALL SIMULATION ---
-            // In a real application, you would make a POST request here:
-            // const response = await fetch('/api/convert', { method: 'POST', body: JSON.stringify({ url: videoUrl, format: format, quality: quality }) });
-
             try {
                 // Simulate various stages of the conversion process
-                await simulateDelay(1000); // Wait for connection
-
+                await simulateDelay(1000); 
                 setProgressBar(20, 'Downloading video source...');
-                await simulateDelay(2500); // Simulate download time
-
+                await simulateDelay(2500); 
                 setProgressBar(50, `Converting to ${format.toUpperCase()} (${quality} quality)...`);
-                await simulateDelay(3000); // Simulate conversion time
-
-                setProgressBar(90, 'Finalizing file and generating download link...');
-                await simulateDelay(1500); // Simulate finalization
-
+                await simulateDelay(3000); 
+                setProgressBar(90, 'Finalizing file and generating link...');
+                await simulateDelay(1500); 
                 setProgressBar(100, 'Done!');
 
-                // Simulate success and getting a functional download link (data URL)
-                // This generates a tiny text file containing the mock details to prove the download mechanism works.
-                const mockContent = `Mock Conversion Success:\nURL: ${videoUrl}\nFormat: ${format.toUpperCase()} (${quality})\nTimestamp: ${new Date().toISOString()}`;
-                const mockDownloadUrl = 'data:text/plain;charset=utf-8,' + encodeURIComponent(mockContent);
+                let mockDownloadUrl;
+                let mockFileName;
+                let successMessage;
 
-                const mockFileName = `converted_media_${quality}.${format}`;
+                if (format === 'mp4') {
+                    // For MP4, use a real public video URL to simulate successful rendering/playback
+                    mockDownloadUrl = MOCK_VIDEO_URL;
+                    mockFileName = `converted_video_${quality}.mp4`;
+                    successMessage = 'Conversion successful! Click below to view the mock video.';
+                } else {
+                    // For MP3, use the data URL for a simple text file download
+                    const mockContent = `Mock Audio Conversion Success:\nURL: ${videoUrl}\nFormat: ${format.toUpperCase()} (${quality})\nTimestamp: ${new Date().toISOString()}\n\nNote: This is a plain text file for demonstration.`;
+                    mockDownloadUrl = 'data:text/plain;charset=utf-8,' + encodeURIComponent(mockContent);
+                    mockFileName = `converted_audio_${quality}.mp3`;
+                    successMessage = 'Conversion successful! A mock text file has been generated.';
+                }
 
-                showDownloadLink(mockDownloadUrl, mockFileName);
-                setReady('Conversion successful! Your mock file is ready.', false);
+                showDownloadLink(mockDownloadUrl, mockFileName, format);
+                setReady(successMessage, false);
 
             } catch (error) {
                 console.error("Conversion simulation failed:", error);
@@ -268,14 +271,29 @@
         }
 
         /**
-         * Shows the final download link button.
-         * @param {string} url - The final download URL.
-         * @param {string} filename - The suggested file name for the download attribute.
+         * Shows the final download link button and sets the appropriate action.
+         * @param {string} url - The final download URL (can be mock or real).
+         * @param {string} filename - The suggested file name.
+         * @param {string} format - The selected format ('mp3' or 'mp4').
          */
-        function showDownloadLink(url, filename) {
+        function showDownloadLink(url, filename, format) {
             downloadLink.href = url;
-            downloadLink.setAttribute('download', filename);
             downloadLinkContainer.classList.remove('hidden');
+            
+            // Default: download behavior
+            downloadLink.setAttribute('download', filename);
+            downloadLink.onclick = null;
+            downloadLink.textContent = 'Download Your File';
+
+            if (format === 'mp4') {
+                // Change action for mock MP4 to simulate playback in a new tab
+                downloadLink.removeAttribute('download');
+                downloadLink.onclick = (e) => {
+                    e.preventDefault();
+                    window.open(url, '_blank');
+                };
+                downloadLink.textContent = 'Play Mock Video (Opens New Tab)';
+            }
         }
 
         // --- Initialization ---
